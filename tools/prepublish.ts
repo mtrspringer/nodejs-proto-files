@@ -49,15 +49,29 @@ const extractAsync = promisify(extract);
 const execAsync = promisify(require('child_process').exec);
 
 async function main() {
+  // Remove existing proto files
+  await execAsync('rm -rf envoy');
   await execAsync('rm -rf google');
 
+  // TODO: import clicktx protos from a github repo
+  // Download envoy data plane API proto files (import dependency)
+  await extractAsync('https://github.com/envoyproxy/data-plane-api/archive/master.zip', {
+      strip: 1,
+      filter: file => {
+          return (file.parent.indexOf('data-plane-api-master') === 0 &&
+                  file.parent.indexOf('data-plane-api-master/envoy/') === 0);
+      },
+  });
+
+  // Download google API proto files (import dependency)
   await extractAsync(
     'https://github.com/googleapis/googleapis/archive/master.zip',
     {
       strip: 1,
     }
   );
-
+  
+  // Download google protobuf proto files (import dependency)
   await extractAsync('https://github.com/google/protobuf/archive/master.zip', {
     strip: 2,
     filter: file => {
